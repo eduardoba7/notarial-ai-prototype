@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Notarial Office — AI Deed Drafting System</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --gold: #2E7D32;
+    --gold-light: #E8F5E9;
+    --gold-dark: #1B5E20;
+    --navy: #1B5E20;
+    --navy-mid: #2E7D32;
+    --navy-light: #F1F8E9;
+    --text: #1C2B3A;
+    --text-muted: #6B7A8D;
+    --border: #D9DDE3;
+    --border-gold: #A5D6A7;
+    --white: #FFFFFF;
+    --bg: #F8F7F4;
+    --success: #2E7D52;
+    --success-bg: #EBF5EF;
+    --warning: #B8620A;
+    --warning-bg: #FDF2E7;
+    --error: #C0392B;
+    --error-bg: #FDECEA;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--navy);
+    padding: 0 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    border-bottom: 1px solid var(--navy-mid);
+  }
+
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .header-seal {
+    width: 36px;
+    height: 36px;
+    border: 1.5px solid var(--gold);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gold);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .header-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px;
+    font-weight: 500;
+    color: #F0EAD8;
+    letter-spacing: 0.02em;
+  }
+
+  .header-sub {
+    font-size: 11px;
+    color: rgba(255,255,255,0.7);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 1px;
+  }
+
+  .header-badge {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.4);
+    color: #FFFFFF;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.05em;
+  }
+
+  .main {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 2.5rem 2rem;
+  }
+
+  .workflow-bar {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 2.5rem;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .step-pill {
+    flex: 1;
+    padding: 10px 8px;
+    text-align: center;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+    border-right: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.2s;
+    position: relative;
+  }
+
+  .step-pill:last-child { border-right: none; }
+
+  .step-pill.active {
+    background: var(--navy);
+    color: #FFFFFF;
+  }
+
+  .step-pill.done {
+    background: var(--gold-light);
+    color: var(--gold-dark);
+  }
+
+  .step-pill.active .step-num {
+    color: #FFFFFF;
+  }
+
+  .step-pill .step-num {
+    display: block;
+    font-size: 16px;
+    font-weight: 300;
+    font-family: 'Cormorant Garamond', serif;
+    margin-bottom: 2px;
+  }
+
+  .card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.75rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--navy);
+    margin-bottom: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .card-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 1.25rem;
+  }
+
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  select, input[type="text"] {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--text);
+    background: var(--white);
+    appearance: none;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    margin-bottom: 1rem;
+  }
+
+  select:focus, input:focus {
+    outline: none;
+    border-color: var(--gold);
+  }
+
+  .select-wrap {
+    position: relative;
+  }
+
+  .select-wrap::after {
+    content: '▾';
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-60%);
+    color: var(--text-muted);
+    font-size: 12px;
+    pointer-events: none;
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .folder-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 1rem;
+  }
+
+  .folder-item {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+
+  .folder-item:hover { border-color: var(--gold); }
+
+  .folder-item.active {
+    border-color: var(--gold);
+    background: var(--gold-light);
+  }
+
+  .folder-item.always {
+    border-color: var(--navy-mid);
+    background: var(--navy-light);
+  }
+
+  .folder-icon {
+    font-size: 20px;
+    margin-bottom: 6px;
+  }
+
+  .folder-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  .folder-desc {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .folder-tag {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+
+  .tag-always { background: var(--navy); color: #F0EAD8; }
+  .tag-area { background: var(--gold-light); color: var(--gold-dark); }
+
+  .checklist {
+    list-style: none;
+    margin-bottom: 1rem;
+  }
+
+  .checklist li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+
+  .checklist li:last-child { border-bottom: none; }
+
+  .check-icon {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+    font-size: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .check-icon.checked {
+    background: var(--success);
+    border-color: var(--success);
+    color: white;
+  }
+
+  .check-icon.missing {
+    background: var(--error-bg);
+    border-color: var(--error);
+    color: var(--error);
+  }
+
+  .doc-label { flex: 1; }
+  .doc-required { font-size: 11px; color: var(--error); margin-top: 2px; }
+  .doc-ok { font-size: 11px; color: var(--success); margin-top: 2px; }
+
+  .btn {
+    padding: 10px 22px;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+  }
+
+  .btn-primary {
+    background: var(--navy);
+    color: #FFFFFF;
+    border: 1px solid var(--navy-mid);
+  }
+
+  .btn-primary:hover { background: var(--navy-mid); }
+
+  .btn-gold {
+    background: var(--gold);
+    color: var(--white);
+  }
+
+  .btn-gold:hover { background: var(--gold-dark); }
+
+  .btn-outline {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+  }
+
+  .btn-outline:hover { border-color: var(--text-muted); color: var(--text); }
+
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 1rem;
+  }
+
+  .alert {
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 13px;
+    margin-bottom: 1rem;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .alert-warning { background: var(--warning-bg); color: var(--warning); border: 1px solid #F0C07A; }
+  .alert-success { background: var(--success-bg); color: var(--success); border: 1px solid #A8D9BA; }
+  .alert-info { background: var(--navy-light); color: var(--navy); border: 1px solid #C5D3E0; }
+
+  .deed-preview {
+    background: #FAFAF8;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.5rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 15px;
+    line-height: 1.8;
+    color: var(--text);
+    max-height: 320px;
+    overflow-y: auto;
+  }
+
+  .deed-preview .deed-center {
+    text-align: center;
+    font-weight: 600;
+    font-size: 17px;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .deed-preview .deed-sep {
+    color: var(--text-muted);
+    margin: 0.5rem 0;
+  }
+
+  .deed-preview strong { font-weight: 600; }
+
+  .deed-preview .missing-field {
+    background: #FFF3CD;
+    border: 1px dashed #F0AD4E;
+    border-radius: 3px;
+    padding: 1px 6px;
+    color: #856404;
+    font-size: 13px;
+  }
+
+  .section { display: none; }
+  .section.active { display: block; }
+
+  .progress-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-bottom: 2rem;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--gold);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  .notary-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--navy-light);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 12px;
+    color: var(--navy);
+    font-weight: 500;
+  }
+
+  .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); display: inline-block; }
+
+  .ai-thinking {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px;
+    background: var(--navy-light);
+    border-radius: 8px;
+    font-size: 13px;
+    color: var(--navy-mid);
+    margin-bottom: 1rem;
+  }
+
+  .spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .hidden { display: none !important; }
+
+  .layer-diagram {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 1rem 0;
+  }
+
+  .layer {
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .layer-1 { background: var(--navy); color: #F0EAD8; }
+  .layer-2 { background: var(--navy-mid); color: #D0DCE8; }
+  .layer-3 { background: var(--gold-light); color: var(--gold-dark); border: 1px solid var(--border-gold); }
+  .layer-4 { background: var(--white); color: var(--text); border: 1px solid var(--border); }
+
+  .layer-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  .l1-num { background: rgba(255,255,255,0.15); color: #F0EAD8; }
+  .l2-num { background: rgba(255,255,255,0.12); color: #D0DCE8; }
+  .l3-num { background: var(--gold); color: white; }
+  .l4-num { background: var(--navy); color: white; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-brand">
+    <div class="header-seal">E</div>
+    <div>
+      <div class="header-title">Eugénia Bessa e Silva — Notarial Office</div>
+      <div class="header-sub">AI-Assisted Deed Drafting System · Porto</div>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <span class="notary-badge"><span class="dot"></span> Notary supervision active</span>
+    <span class="header-badge">Prototype v1</span>
+  </div>
+</header>
+
+<div class="main">
+
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill" style="width:25%"></div>
+  </div>
+
+  <div class="workflow-bar">
+    <div class="step-pill active" id="pill-1" onclick="goTo(1)">
+      <span class="step-num">1</span>Deed type
+    </div>
+    <div class="step-pill" id="pill-2" onclick="goTo(2)">
+      <span class="step-num">2</span>Documents
+    </div>
+    <div class="step-pill" id="pill-3" onclick="goTo(3)">
+      <span class="step-num">3</span>AI context
+    </div>
+    <div class="step-pill" id="pill-4" onclick="goTo(4)">
+      <span class="step-num">4</span>Draft
+    </div>
+    <div class="step-pill" id="pill-5" onclick="goTo(5)">
+      <span class="step-num">5</span>Review
+    </div>
+  </div>
+
+  <!-- STEP 1 -->
+  <div class="section active" id="sec-1">
+    <div class="card">
+      <div class="card-title">Select deed type</div>
+      <div class="card-sub">The system will automatically load the relevant legal framework and formatting rules.</div>
+
+      <label>Practice area</label>
+      <div class="select-wrap">
+        <select id="areaSelect" onchange="updateDeedType()">
+          <option value="">— Select area —</option>
+          <option value="property">Property</option>
+          <option value="corporate">Corporate</option>
+          <option value="civil">Civil / Succession</option>
+        </select>
+      </div>
+
+      <label>Deed type</label>
+      <div class="select-wrap">
+        <select id="deedSelect">
+          <option value="">— Select deed type —</option>
+        </select>
+      </div>
+
+      <div class="layer-diagram">
+        <div class="layer layer-1">
+          <div class="layer-num l1-num">1</div>
+          <div><strong>Base Notarial Folder</strong> — general legislation, formatting rules · always connected</div>
+        </div>
+        <div class="layer layer-2" id="layer2" style="opacity:0.35">
+          <div class="layer-num l2-num">2</div>
+          <div id="layer2text">Area folder — select deed type to activate</div>
+        </div>
+        <div class="layer layer-3">
+          <div class="layer-num l3-num">3</div>
+          <div>Operational guidelines — practice-specific know-how encoded for this office</div>
+        </div>
+        <div class="layer layer-4">
+          <div class="layer-num l4-num">4</div>
+          <div>Client documents folder — uploaded for this specific transaction</div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="goTo(2)">Continue →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2 -->
+  <div class="section" id="sec-2">
+    <div class="card">
+      <div class="card-title">Document checklist</div>
+      <div class="card-sub">Required documents for this deed type. Mark what has been received.</div>
+
+      <ul class="checklist" id="docChecklist"></ul>
+
+      <div class="alert alert-warning" id="missingAlert" style="display:none">
+        <span>⚠</span>
+        <div id="missingText">Some documents are missing. The AI will flag these fields as incomplete in the draft.</div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-outline" onclick="goTo(1)">← Back</button>
+        <button class="btn btn-primary" onclick="goTo(3)">Continue →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 3 -->
+  <div class="section" id="sec-3">
+    <div class="card">
+      <div class="card-title">AI context loaded</div>
+      <div class="card-sub">The following knowledge layers are active for this session.</div>
+
+      <div class="alert alert-success">
+        <span>✓</span>
+        <div>4 knowledge layers connected. Claude will apply all applicable legislation and this office's formatting and style guidelines.</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem;">
+        <div style="border:1px solid var(--border);border-radius:8px;padding:12px;">
+          <div style="font-size:11px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">Active legislation</div>
+          <div style="font-size:13px;color:var(--text);" id="activeLegislation">Civil Code, Notarial Code</div>
+        </div>
+        <div style="border:1px solid var(--border);border-radius:8px;padding:12px;">
+          <div style="font-size:11px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">Tax checks required</div>
+          <div style="font-size:13px;color:var(--text);" id="taxChecks">IMT, Stamp Duty (IS)</div>
+        </div>
+        <div style="border:1px solid var(--border);border-radius:8px;padding:12px;">
+          <div style="font-size:11px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">Formatting</div>
+          <div style="font-size:13px;color:var(--text);">Bookman Old Style 12.5pt · 1.5 spacing</div>
+        </div>
+        <div style="border:1px solid var(--border);border-radius:8px;padding:12px;">
+          <div style="font-size:11px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;">Double-check protocol</div>
+          <div style="font-size:13px;color:var(--text);" id="doubleCheck">Recommended for this deed type</div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-outline" onclick="goTo(2)">← Back</button>
+        <button class="btn btn-gold" onclick="startDraft()">Generate draft →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="section" id="sec-4">
+    <div class="card">
+      <div class="card-title">AI-generated draft</div>
+      <div class="card-sub">Review the draft below. Missing fields are highlighted. The notary must approve before use.</div>
+
+      <div class="ai-thinking hidden" id="aiThinking">
+        <div class="spinner"></div>
+        <span id="thinkingText">Reading client documents and applicable legislation...</span>
+      </div>
+
+      <div class="deed-preview" id="deedPreview"></div>
+
+      <div class="alert alert-warning" style="margin-top:1rem;" id="flagsAlert">
+        <span>⚠</span>
+        <div id="flagsText"></div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-outline" onclick="goTo(3)">← Back</button>
+        <button class="btn btn-primary" onclick="goTo(5)">Send to notary review →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 5 -->
+  <div class="section" id="sec-5">
+    <div class="card">
+      <div class="card-title">Notary review</div>
+      <div class="card-sub">Final approval required before the deed is authenticated. AI assists — the notary decides.</div>
+
+      <div class="alert alert-info">
+        <span>ℹ</span>
+        <div>All legal responsibility for this deed rests with the notary. This draft is a working document, not a final instrument.</div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:1.25rem;">
+        <div style="background:var(--bg);border-radius:8px;padding:14px;text-align:center;">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:500;color:var(--navy);">~40</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">minutes saved</div>
+        </div>
+        <div style="background:var(--bg);border-radius:8px;padding:14px;text-align:center;">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:500;color:var(--navy);" id="fieldsChecked">12</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">data fields verified</div>
+        </div>
+        <div style="background:var(--bg);border-radius:8px;padding:14px;text-align:center;">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:500;color:var(--navy);" id="flagCount">2</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">items flagged for review</div>
+        </div>
+      </div>
+
+      <div style="border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:1rem;">
+        <div style="font-size:12px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">Notary checklist</div>
+        <ul class="checklist">
+          <li><div class="check-icon" onclick="toggleCheck(this)"></div><div class="doc-label">Party identification verified against source documents</div></li>
+          <li><div class="check-icon" onclick="toggleCheck(this)"></div><div class="doc-label">Property description matches land registry entry</div></li>
+          <li><div class="check-icon" onclick="toggleCheck(this)"></div><div class="doc-label">Tax references and amounts confirmed</div></li>
+          <li><div class="check-icon" onclick="toggleCheck(this)"></div><div class="doc-label">All missing fields completed manually</div></li>
+          <li><div class="check-icon" onclick="toggleCheck(this)"></div><div class="doc-label">Legal requirements for this deed type satisfied</div></li>
+        </ul>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-outline" onclick="goTo(4)">← Back to draft</button>
+        <button class="btn btn-gold" onclick="approve()">Approve & authenticate</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const deedTypes = {
+  property: ['Sale and purchase', 'Mortgage', 'Donation', 'Partition', 'Exchange'],
+  corporate: ['Share transfer', 'Capital increase', 'Company incorporation', 'Amendment of articles'],
+  civil: ['Succession entitlement', 'Will', 'Power of attorney', 'Recognition of paternity']
+};
+
+const docLists = {
+  'Sale and purchase': [
+    { name: 'Land registry certificate (Certidão de Teor)', required: true },
+    { name: 'Tax office certificate (Caderneta Predial)', required: true },
+    { name: 'Buyer ID / Citizen Card', required: true },
+    { name: 'Seller ID / Citizen Card', required: true },
+    { name: 'IMT payment proof', required: true },
+    { name: 'Energy certificate', required: true },
+    { name: 'Condominium declaration (if applicable)', required: false }
+  ],
+  'Share transfer': [
+    { name: 'Commercial registry certificate', required: true },
+    { name: 'Articles of association', required: true },
+    { name: 'Transferor ID / Citizen Card', required: true },
+    { name: 'Transferee ID / Citizen Card', required: true },
+    { name: 'Shareholders agreement (if applicable)', required: false }
+  ],
+  default: [
+    { name: 'Party identification documents', required: true },
+    { name: 'Relevant registry certificates', required: true },
+    { name: 'Supporting legal documentation', required: true }
+  ]
+};
+
+const draftTemplates = {
+  'Sale and purchase': `<div class="deed-center">DEED OF SALE AND PURCHASE</div>
+<div class="deed-sep">———————————————————————</div>
+<p>On this day, before me, <strong>Eugénia Maria de Sousa Bessa e Silva</strong>, Notary, at the Notarial Office located at Avenida de França, no. 20, 3rd floor, room 303, in the city of Porto, appeared as parties:</p>
+<br>
+<p><strong>AS SELLER:</strong> <span class="missing-field">[ Full name ]</span>, holder of Citizen Card no. <span class="missing-field">[ CC number ]</span>, tax identification number <span class="missing-field">[ NIF ]</span>, resident at <span class="missing-field">[ address ]</span>;</p>
+<br>
+<p><strong>AS BUYER:</strong> <span class="missing-field">[ Full name ]</span>, holder of Citizen Card no. <span class="missing-field">[ CC number ]</span>, tax identification number <span class="missing-field">[ NIF ]</span>, resident at <span class="missing-field">[ address ]</span>;</p>
+<br>
+<div class="deed-sep">———————————————————————</div>
+<p><strong>OBJECT OF THE DEED</strong></p>
+<br>
+<p>The Seller declares that he/she is the sole owner of the urban property described in the Land Registry of <span class="missing-field">[ registry office ]</span> under Article <span class="missing-field">[ article no. ]</span>, located at <span class="missing-field">[ property address ]</span>.</p>
+<br>
+<p><strong>PRICE AND PAYMENT</strong></p>
+<br>
+<p>The Buyer acquires the above property for the price of <span class="missing-field">[ AMOUNT IN FULL ]</span> (<span class="missing-field">[ €amount ]</span>), which the Seller acknowledges having received in full prior to this deed.</p>`,
+  default: `<div class="deed-center">NOTARIAL DEED</div>
+<div class="deed-sep">———————————————————————</div>
+<p>On this day, before me, <strong>Eugénia Maria de Sousa Bessa e Silva</strong>, Notary, at the Notarial Office located at Avenida de França, no. 20, 3rd floor, room 303, in the city of Porto, appeared as parties:</p>
+<br>
+<p><strong>FIRST PARTY:</strong> <span class="missing-field">[ Full name ]</span>, holder of Citizen Card no. <span class="missing-field">[ CC number ]</span>, tax identification number <span class="missing-field">[ NIF ]</span>;</p>
+<br>
+<p><strong>SECOND PARTY:</strong> <span class="missing-field">[ Full name ]</span>, holder of Citizen Card no. <span class="missing-field">[ CC number ]</span>, tax identification number <span class="missing-field">[ NIF ]</span>;</p>
+<br>
+<div class="deed-sep">———————————————————————</div>
+<p>The parties declare that they wish to formalize the following deed, the terms of which have been freely agreed between them, in accordance with the applicable provisions of Portuguese law.</p>`
+};
+
+let currentStep = 1;
+
+function goTo(step) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.step-pill').forEach((p, i) => {
+    p.classList.remove('active', 'done');
+    if (i + 1 < step) p.classList.add('done');
+    if (i + 1 === step) p.classList.add('active');
+  });
+  document.getElementById('sec-' + step).classList.add('active');
+  document.getElementById('progressFill').style.width = (step * 20) + '%';
+  currentStep = step;
+  if (step === 2) buildChecklist();
+  if (step === 3) updateContext();
+}
+
+function updateDeedType() {
+  const area = document.getElementById('areaSelect').value;
+  const sel = document.getElementById('deedSelect');
+  sel.innerHTML = '<option value="">— Select deed type —</option>';
+  if (area && deedTypes[area]) {
+    deedTypes[area].forEach(d => {
+      const o = document.createElement('option');
+      o.value = d; o.textContent = d;
+      sel.appendChild(o);
+    });
+  }
+  const l2 = document.getElementById('layer2');
+  const l2t = document.getElementById('layer2text');
+  if (area) {
+    l2.style.opacity = '1';
+    const names = { property: 'Base Property Folder — property law, IMT, land registry rules', corporate: 'Base Corporate Folder — company law, commercial registry rules', civil: 'Base Civil Folder — succession law, civil status rules' };
+    l2t.textContent = names[area];
+  } else {
+    l2.style.opacity = '0.35';
+    l2t.textContent = 'Area folder — select deed type to activate';
+  }
+}
+
+function buildChecklist() {
+  const deed = document.getElementById('deedSelect').value;
+  const docs = docLists[deed] || docLists.default;
+  const ul = document.getElementById('docChecklist');
+  ul.innerHTML = '';
+  docs.forEach((doc, i) => {
+    const li = document.createElement('li');
+    const received = i % 3 !== 2;
+    li.innerHTML = `<div class="check-icon ${received ? 'checked' : 'missing'}" onclick="toggleCheck(this)">${received ? '✓' : '!'}</div>
+      <div class="doc-label">
+        <div>${doc.name}${doc.required ? ' <span style="color:var(--error);font-size:11px;">*required</span>' : ''}</div>
+        <div class="${received ? 'doc-ok' : 'doc-required'}">${received ? 'Received' : 'Missing — AI will flag in draft'}</div>
+      </div>`;
+    ul.appendChild(li);
+  });
+  const missing = docs.filter((d, i) => i % 3 === 2);
+  const alert = document.getElementById('missingAlert');
+  alert.style.display = missing.length ? 'flex' : 'none';
+}
+
+function updateContext() {
+  const deed = document.getElementById('deedSelect').value;
+  const area = document.getElementById('areaSelect').value;
+  const leg = { property: 'Civil Code, IMT Code, Land Registry Code', corporate: 'Commercial Companies Code, Commercial Registry Code', civil: 'Civil Code, Succession Law, Civil Status Code' };
+  const tax = { property: 'IMT, Stamp Duty (IS)', corporate: 'Stamp Duty (IS)', civil: 'Stamp Duty (IS), Inheritance Tax (if applicable)' };
+  const dc = { property: '✓ Recommended — high-value transaction', corporate: '✓ Recommended — critical data fields', civil: 'Optional — assess case by case' };
+  document.getElementById('activeLegislation').textContent = leg[area] || 'Civil Code, Notarial Code';
+  document.getElementById('taxChecks').textContent = tax[area] || 'IMT, Stamp Duty (IS)';
+  document.getElementById('doubleCheck').textContent = dc[area] || 'Assess case by case';
+}
+
+function startDraft() {
+  goTo(4);
+  const thinking = document.getElementById('aiThinking');
+  const preview = document.getElementById('deedPreview');
+  thinking.classList.remove('hidden');
+  preview.innerHTML = '';
+  const messages = ['Reading client documents and applicable legislation...', 'Applying office formatting and style guidelines...', 'Cross-checking legal requirements for this deed type...', 'Generating draft and flagging incomplete fields...'];
+  let i = 0;
+  const interval = setInterval(() => {
+    if (i < messages.length) {
+      document.getElementById('thinkingText').textContent = messages[i++];
+    } else {
+      clearInterval(interval);
+      thinking.classList.add('hidden');
+      const deed = document.getElementById('deedSelect').value;
+      preview.innerHTML = draftTemplates[deed] || draftTemplates.default;
+      document.getElementById('flagsAlert').style.display = 'flex';
+      document.getElementById('flagsText').innerHTML = '<strong>Fields requiring completion:</strong> Buyer and seller identification (NIF, CC number, address), property registry details, purchase price. Please complete before authentication.';
+    }
+  }, 900);
+}
+
+function toggleCheck(el) {
+  el.classList.toggle('checked');
+  el.textContent = el.classList.contains('checked') ? '✓' : '';
+  if (el.classList.contains('missing') && el.classList.contains('checked')) el.classList.remove('missing');
+}
+
+function approve() {
+  alert('Deed approved by notary and sent to authentication queue.\n\nThis action would be logged with timestamp and notary signature in a production system.');
+}
+</script>
+</body>
+</html>
